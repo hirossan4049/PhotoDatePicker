@@ -7,14 +7,18 @@
 
 import UIKit
 
-class TextHighlightMenu: UIView, UICollectionViewDataSource, UICollectionViewDelegate {
-    private let lists = ["6/15", "7/15", "8/15", "9/15", "10/15", "fff"]
-//    var collView: UICollectionView!
-    private lazy var collectionView: UICollectionView = {
-        //セルのレイアウト設計
-        let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
+protocol TextHighlightMenuDelegate {
+    func textHighlightMenuDelegate(_ textHighlightMenu: TextHighlightMenu, didSelectItemAt index: Int)
+}
 
-        //各々の設計に合わせて調整
+class TextHighlightMenu: UIView, UICollectionViewDataSource, UICollectionViewDelegate {
+    
+    public var delegate: TextHighlightMenuDelegate?
+    
+    public var lists: [String] = []
+
+    private lazy var collectionView: UICollectionView = {
+        let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         let margin:CGFloat = 30
         layout.minimumInteritemSpacing = margin
@@ -25,14 +29,13 @@ class TextHighlightMenu: UIView, UICollectionViewDataSource, UICollectionViewDel
 
         let collectionView = UICollectionView(frame: bounds, collectionViewLayout: layout)
         collectionView.backgroundColor = .systemGray5
-        //セルの登録
         collectionView.register(CollectionViewCell.self, forCellWithReuseIdentifier: "CollectionViewCell")
         return collectionView
     }()
     private var selectedView: UIView!
     
-    override func draw(_ rect: CGRect) {
-        // Drawing code
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         clipsToBounds = true
         layer.cornerRadius = bounds.height / 2
         
@@ -52,9 +55,21 @@ class TextHighlightMenu: UIView, UICollectionViewDataSource, UICollectionViewDel
         collectionView.addSubview(selectedView)
     }
     
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize{
-//        return CGSize(width: 64, height: 1)
-//    }
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func draw(_ rect: CGRect) {
+
+    }
+    
+    public func reloadData() {
+        collectionView.reloadData()
+    }
+    
+    public func selected(index: Int) {
+        collectionView(collectionView, didSelectItemAt: IndexPath(row: index, section: 0))
+    }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return lists.count
@@ -63,15 +78,12 @@ class TextHighlightMenu: UIView, UICollectionViewDataSource, UICollectionViewDel
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionViewCell", for: indexPath) as! CollectionViewCell
-//        cell.frame.size.width = 64
         cell.titleLabel.text = lists[indexPath.row]
-//        let cellText = fruits[indexPath.item]
-//        cell.setupContents(textName: cellText)
-
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        delegate?.textHighlightMenuDelegate(self, didSelectItemAt: indexPath.row)
         let cell = collectionView.cellForItem(at: indexPath)
         
         UIView.animate(withDuration: 0.3, animations: {
@@ -79,10 +91,6 @@ class TextHighlightMenu: UIView, UICollectionViewDataSource, UICollectionViewDel
         })
 
     }
-    
-
-    
-
 }
 
 
